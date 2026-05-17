@@ -45,7 +45,26 @@
 \SV
    endmodule
 ```
-<img width="1918" height="782" alt="calc with counter" src="https://github.com/user-attachments/assets/ef7a5224-e6bc-429c-9c42-443df2705d88" />
+<img width="1918" height="782" alt="calc with counter" src="https://github.com/user-attachments/assets/ef7a5224-e6bc-429c-9c42-443df2705d88" /> <br>
+## Pythogoras Theorem $Valid usage
+```bash
+ |calc
+      @1 $reset=*reset;
+      ?$valid
+         @1                                  // [>>>]
+            $aa_sq[31:0] = $aa[3:0] ** 2;     // [>>>]
+            $bb_sq[31:0] = $bb[3:0] ** 2;     // [>>>]
+         @2                                  // [>>>]
+            $cc_sq[31:0] = $aa_sq + $bb_sq;   // [>>>]
+         @3                                  // [>>>]
+            $cc[31:0] = sqrt($cc_sq);         // [>>>]
+         @4
+            $tot_dist[63:0] = $reset ? 0 :
+                  $valid ? $cc + >>1$tot_dist :
+                           >>1$tot_dist;
+
+```
+<img width="1918" height="825" alt="image" src="https://github.com/user-attachments/assets/9c2c116a-5e4d-4256-bf7e-8053ae60133a" />
 
 ## Calculator with two stage calc with counter and valid mux
 ```bash

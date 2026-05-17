@@ -50,7 +50,7 @@
 
 ```
 ## Calculator with two stage
-
+```bash
  |calc
    @1
       $reset = *reset;
@@ -72,3 +72,4 @@
                         ? $prod[31:0] :
                          $quot ;
             $out[31:0] = ($reset || !$valid) ? 0 : $out[31:0];
+```

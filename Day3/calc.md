@@ -51,23 +51,23 @@
 ```
 ## Calculator with two stage
 ```bash
- |calc
+    |calc
       @1
          $reset = *reset;
       ?$valid
          @1
-            $val1[31:0] = (>>1$out[31:0]);
+            $val1[31:0] = (>>2$out[31:0]);
             $val2[31:0] = $rand2[3:0];
             $sum[31:0] = $val1[31:0] + $val2[31:0];
             $diff[31:0] = $val1[31:0] - $val2[31:0];
             $prod[31:0] = $val1[31:0] * $val2[31:0];
             $quot[31:0] = $val1[31:0] / $val2[31:0];
-            $valid[4:0] =$reset ? (1+ >>1$valid) : 1;
+            $valid[4:0] = $reset ? (1+ >>1$valid) : 1;
          @2
-            $out[31:0] = ($op[1:0] == 2'b00)? $sum[31:0] : 
+            $resetmux = ($reset || !$valid);
+            $out[31:0] = $resetmux ? 0:
+                            ($op[1:0] == 2'b00)? $sum[31:0] : 
                              ($op[1:0] == 2'b01)   ? $diff[31:0] :
                              ($op[1:0] == 2'b10)  ? $prod[31:0] :
                               $quot ;
-            $out[31:0] = ($reset || !$valid) ? 0 : 
-                               $out[31:0];
 ```

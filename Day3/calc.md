@@ -49,7 +49,7 @@
 
 
 ```
-## Calculator with two stage
+## Calculator with two stage calc with counter and valid mux
 ```bash
     |calc
       @1

@@ -125,3 +125,135 @@
 ## Result:
 <img width="1918" height="815" alt="image" src="https://github.com/user-attachments/assets/79a66d45-caf5-4fe4-acac-330f2e5cea5e" />
 
+## Decode forming imm [31:0] based on instruction type
+<img width="1227" height="401" alt="image" src="https://github.com/user-attachments/assets/80fdd88c-6cd2-4922-924d-33c7cebfe4a6" />
+
+```bash
+|cpu
+      @0
+         $reset = *reset;
+         $pc[31:0] = >>1$reset ? 32'd0 :
+                                      >>1$inc_pc[31:0];
+      @1
+         $inc_pc[31:0] = $pc[31:0] + 32'd4;
+      /imem[7:0]
+         @0  
+            $imem_rd_en = !$reset;
+            $imem_rd_addr[M4_IMEM_INDEX_CNT-1:0]
+                  = $pc[M4_IMEM_INDEX_CNT+1:2];
+         @1 
+            $instr[31:0] = $imem_rd_data[31:0];
+            
+      /decode
+         
+         @1
+            $is_i_instr = $instr[6:2] ==? 5'b00_00x ||
+                           $instr[6:2] ==? 5'b00_1x0 ||
+                           $instr[6:2] ==? 5'b11_001 ;
+            $is_r_instr = $instr[6:2] ==? 5'b01_011 ||
+                           $instr[6:2] ==? 5'b01_1x0 ||
+                           $instr[6:2] ==? 5'b10_100 ;
+            $is_s_instr = $instr[6:2] ==? 5'b01_00x ;
+            $is_b_instr = $instr[6:2] ==? 5'b11_000 ;
+            $is_j_instr = $instr[6:2] ==? 5'b11_011 ;
+            $is_u_instr = $instr[6:2] ==? 5'b0x_101 ;
+            $imm[31:0] =
+                  $is_i_instr ? { {21{$instr[31]}}, $instr[30:20] } :
+            
+                  $is_s_instr ? { {21{$instr[31]}},
+                                   $instr[30:25],
+                                   $instr[11:7] } :
+            
+                  $is_b_instr ? { {20{$instr[31]}},
+                                   $instr[7],
+                                   $instr[30:25],
+                                   $instr[11:8],
+                                   1'b0 } :
+            
+                  $is_u_instr ? { $instr[31:12],
+                                   12'd0 } :
+            
+                  $is_j_instr ? { {12{$instr[31]}},
+                                   $instr[19:12],
+                                   $instr[20],
+                                   $instr[30:21],
+                                   1'b0 } :
+            
+                  32'b0;
+
+```
+## Result:
+<img width="1919" height="820" alt="image" src="https://github.com/user-attachments/assets/9d86ee32-4a59-4339-a72e-78edf7a7d3ad" />
+
+## In Decode Extract other instruction fields: $funct7, $funct3, $rs1, $rs2, $rd, $opcode
+<img width="1124" height="465" alt="image" src="https://github.com/user-attachments/assets/e437ed55-5c91-4006-add9-cdcf98e77267" />
+
+```bash
+
+|cpu
+      @0
+         $reset = *reset;
+         $pc[31:0] = >>1$reset ? 32'd0 :
+                                      >>1$inc_pc[31:0];
+      @1
+         $inc_pc[31:0] = $pc[31:0] + 32'd4;
+      /imem[7:0]
+         @0  
+            $imem_rd_en = !$reset;
+            $imem_rd_addr[M4_IMEM_INDEX_CNT-1:0]
+                  = $pc[M4_IMEM_INDEX_CNT+1:2];
+         @1 
+            $instr[31:0] = $imem_rd_data[31:0];
+            
+      /decode
+         
+         @1
+            $is_i_instr = $instr[6:2] ==? 5'b00_00x ||
+                           $instr[6:2] ==? 5'b00_1x0 ||
+                           $instr[6:2] ==? 5'b11_001 ;
+            $is_r_instr = $instr[6:2] ==? 5'b01_011 ||
+                           $instr[6:2] ==? 5'b01_1x0 ||
+                           $instr[6:2] ==? 5'b10_100 ;
+            $is_s_instr = $instr[6:2] ==? 5'b01_00x ;
+            $is_b_instr = $instr[6:2] ==? 5'b11_000 ;
+            $is_j_instr = $instr[6:2] ==? 5'b11_011 ;
+            $is_u_instr = $instr[6:2] ==? 5'b0x_101 ;
+            $imm[31:0] =
+                  $is_i_instr ? { {21{$instr[31]}}, $instr[30:20] } :
+            
+                  $is_s_instr ? { {21{$instr[31]}},
+                                   $instr[30:25],
+                                   $instr[11:7] } :
+            
+                  $is_b_instr ? { {20{$instr[31]}},
+                                   $instr[7],
+                                   $instr[30:25],
+                                   $instr[11:8],
+                                   1'b0 } :
+            
+                  $is_u_instr ? { $instr[31:12],
+                                   12'd0 } :
+            
+                  $is_j_instr ? { {12{$instr[31]}},
+                                   $instr[19:12],
+                                   $instr[20],
+                                   $instr[30:21],
+                                   1'b0 } :
+            
+                  32'b0;
+
+                    $funct7[6:0] = $instr[31:25];
+                    
+                    $rs2[4:0]    = $instr[24:20];
+                    
+                    $rs1[4:0]    = $instr[19:15];
+                    
+                    $funct3[2:0] = $instr[14:12];
+                    
+                    $rd[4:0]     = $instr[11:7];
+                    
+                    $opcode[6:0] = $instr[6:0];
+```
+
+## Result:
+<img width="1919" height="826" alt="image" src="https://github.com/user-attachments/assets/59dc901c-1903-45a7-b403-65e374b5f888" />

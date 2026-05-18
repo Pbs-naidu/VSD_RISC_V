@@ -17,4 +17,111 @@
 ## Result:
 <img width="1918" height="823" alt="image" src="https://github.com/user-attachments/assets/78957cd6-117b-46b5-9e73-85f04bd5788c" />
 
+## Fetch
+## Instruction Memory
+<img width="1424" height="493" alt="image" src="https://github.com/user-attachments/assets/aaeb3b03-1354-424f-94fc-3686cef2f69d" />
+
+```bash
+ |cpu
+      
+      @0
+
+         $reset = *reset;
+         $pc[31:0] = >>1$reset ? 32'd0 :
+                                      >>1$inc_pc[31:0];
+      @1
+         $inc_pc[31:0] = $pc[31:0] + 32'd4;
+
+
+
+      // YOUR CODE HERE
+      // ...
+
+      // Note: Because of the magic we are using for visualisation, if visualisation is enabled below,
+      //       be sure to avoid having unassigned signals (which you might be using for random inputs)
+      //       other than those specifically expected in the labs. You'll get strange errors for these.
+
+   
+   // Assert these to end simulation (before Makerchip cycle limit).
+   *passed = *cyc_cnt > 40;
+   *failed = 1'b0;
+   
+   // Macro instantiations for:
+   //  o instruction memory
+   //  o register file
+   //  o data memory
+   //  o CPU visualization
+   |cpu
+      
+      m4+imem(@1)    // Args: (read stage)
+      //m4+rf(@1, @1)  // Args: (read stage, write stage) - if equal, no register bypass is required
+      //m4+dmem(@4)    // Args: (read/write stage)
+
+   m4+cpu_viz(@4)    // For visualisation, argument should be at least equal to the last stage of CPU logic. @4 would work for all labs.
+\SV
+   endmodule
+```
+
+## Result:
+<img width="1918" height="817" alt="image" src="https://github.com/user-attachments/assets/61dc741b-53b6-465f-92d2-bd47de7dc6c4" />
+
+## IMEMORY Modification
+<img width="333" height="302" alt="image" src="https://github.com/user-attachments/assets/ba67e782-7f78-46a9-8bc0-603878458706" />
+
+```bash
+  |cpu
+      @0
+         $reset = *reset;
+
+         $pc[31:0] = >>1$reset ? 32'd0 :
+                                      >>1$inc_pc[31:0];
+      @1
+         $inc_pc[31:0] = $pc[31:0] + 32'd4;
+      /imem[7:0]
+         @0  
+            $imem_rd_en = !$reset;
+            $imem_rd_addr[M4_IMEM_INDEX_CNT-1:0]
+                  = $pc[M4_IMEM_INDEX_CNT+1:2];
+         @1 
+            $instr[31:0] = $imem_rd_data[31:0];
+```
+## Result:
+<img width="1919" height="821" alt="image" src="https://github.com/user-attachments/assets/ea27fce8-781d-4801-9a1e-af73e9045d06" />
+
+
+## Decoder
+<img width="1184" height="415" alt="image" src="https://github.com/user-attachments/assets/86f4a1f2-eb3a-425a-b0c8-90c66e7ec1a0" />
+
+```bash
+|cpu
+      @0
+         $reset = *reset;
+         $pc[31:0] = >>1$reset ? 32'd0 :
+                                      >>1$inc_pc[31:0];
+      @1
+         $inc_pc[31:0] = $pc[31:0] + 32'd4;
+      /imem[7:0]
+         @0  
+            $imem_rd_en = !$reset;
+            $imem_rd_addr[M4_IMEM_INDEX_CNT-1:0]
+                  = $pc[M4_IMEM_INDEX_CNT+1:2];
+         @1 
+            $instr[31:0] = $imem_rd_data[31:0];
+            
+      /decode    
+         @1
+            $is_i_instr = $instr[6:2] ==? 5'b00_00x ||
+                           $instr[6:2] ==? 5'b00_1x0 ||
+                           $instr[6:2] ==? 5'b11_001 ;
+            $is_r_instr = $instr[6:2] ==? 5'b01_011 ||
+                           $instr[6:2] ==? 5'b01_1x0 ||
+                           $instr[6:2] ==? 5'b10_100 ;
+            $is_s_instr = $instr[6:2] ==? 5'b01_00x ;
+            $is_b_instr = $instr[6:2] ==? 5'b11_000 ;
+            $is_j_instr = $instr[6:2] ==? 5'b11_011 ;
+            $is_u_instr = $instr[6:2] ==? 5'b0x_101 ;
+```
+
+## Result:
+<img width="1918" height="815" alt="image" src="https://github.com/user-attachments/assets/79a66d45-caf5-4fe4-acac-330f2e5cea5e" />
 

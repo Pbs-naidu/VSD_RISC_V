@@ -257,3 +257,184 @@
 
 ## Result:
 <img width="1919" height="826" alt="image" src="https://github.com/user-attachments/assets/59dc901c-1903-45a7-b403-65e374b5f888" />
+
+## Updating $funct7, $funct3, $rs1, $rs2, $rd, $opcode with valid keyword
+<img width="989" height="411" alt="image" src="https://github.com/user-attachments/assets/c38a6cc5-f367-4c6c-8502-7207b075ccec" />
+
+```bash
+ |cpu
+      @0
+         $reset = *reset;
+         $pc[31:0] = >>1$reset ? 32'd0 :
+                                      >>1$inc_pc[31:0];
+      @1
+         $inc_pc[31:0] = $pc[31:0] + 32'd4;
+      /imem[7:0]
+         @0  
+            $imem_rd_en = !$reset;
+            $imem_rd_addr[M4_IMEM_INDEX_CNT-1:0]
+                  = $pc[M4_IMEM_INDEX_CNT+1:2];
+         @1 
+            $instr[31:0] = $imem_rd_data[31:0];
+            
+      /decode
+         
+         @1
+            $is_i_instr = $instr[6:2] ==? 5'b00_00x ||
+                           $instr[6:2] ==? 5'b00_1x0 ||
+                           $instr[6:2] ==? 5'b11_001 ;
+            $is_r_instr = $instr[6:2] ==? 5'b01_011 ||
+                           $instr[6:2] ==? 5'b01_1x0 ||
+                           $instr[6:2] ==? 5'b10_100 ;
+            $is_s_instr = $instr[6:2] ==? 5'b01_00x ;
+            $is_b_instr = $instr[6:2] ==? 5'b11_000 ;
+            $is_j_instr = $instr[6:2] ==? 5'b11_011 ;
+            $is_u_instr = $instr[6:2] ==? 5'b0x_101 ;
+            
+            $imm[31:0] = $is_i_instr ? { {21{$instr[31]}}, $instr[30:20] } :
+            $is_s_instr ? { {21{$instr[31]}},
+                             $instr[30:25],
+                             $instr[11:7] } :
+
+            $is_b_instr ? { {20{$instr[31]}},
+                             $instr[7],
+                             $instr[30:25],
+                             $instr[11:8],
+                             1'b0 } :
+
+            $is_u_instr ? { $instr[31:12],
+                             12'd0 } :
+
+            $is_j_instr ? { {12{$instr[31]}},
+                             $instr[19:12],
+                             $instr[20],
+                             $instr[30:21],
+                             1'b0 } : 32'd0;
+
+
+            $funct7_valid = $is_r_instr;
+            ?$funct7_valid
+               $funct7[6:0] = $instr[31:25];
+            
+            $rs2_valid = $is_r_instr || $is_s_instr || $is_b_instr;
+            ?$rs2_valid
+               $rs2[4:0]    = $instr[24:20];
+              
+            $rs1_valid = $is_r_instr || $is_i_instr || $is_s_instr || $is_b_instr;
+            ?$rs2_valid
+               $rs1[4:0]    = $instr[19:15];
+
+            $funct3_valid = $is_r_instr || $is_i_instr || $is_s_instr || $is_b_instr;
+            ?$funct3_valid
+               $funct3[2:0] = $instr[14:12];
+
+            $rd_valid = $is_r_instr || $is_i_instr || $is_u_instr || $is_j_instr;
+            ?$rd_valid
+               $rd[4:0]     = $instr[11:7];
+
+            $opcode_valid = $is_r_instr || $is_i_instr || $is_s_instr || $is_b_instr || $is_u_instr || $is_j_instr;
+            ?$opcode_valid
+               $opcode[6:0] = $instr[6:0]; 
+
+````
+
+## Result:
+<img width="1919" height="823" alt="image" src="https://github.com/user-attachments/assets/f7b826f0-e5bf-40ba-aaf4-b58c3e49933b" />
+
+##  Decode RV32I Base Instruction Set
+```bash
+  |cpu
+      @0
+         $reset = *reset;
+         $pc[31:0] = >>1$reset ? 32'd0 :
+                                      >>1$inc_pc[31:0];
+      @1
+         $inc_pc[31:0] = $pc[31:0] + 32'd4;
+      /imem[7:0]
+         @0  
+            $imem_rd_en = !$reset;
+            $imem_rd_addr[M4_IMEM_INDEX_CNT-1:0]
+                  = $pc[M4_IMEM_INDEX_CNT+1:2];
+         @1 
+            $instr[31:0] = $imem_rd_data[31:0];
+            
+      /decode
+         
+         @1
+            $is_i_instr = $instr[6:2] ==? 5'b00_00x ||
+                           $instr[6:2] ==? 5'b00_1x0 ||
+                           $instr[6:2] ==? 5'b11_001 ;
+            $is_r_instr = $instr[6:2] ==? 5'b01_011 ||
+                           $instr[6:2] ==? 5'b01_1x0 ||
+                           $instr[6:2] ==? 5'b10_100 ;
+            $is_s_instr = $instr[6:2] ==? 5'b01_00x ;
+            $is_b_instr = $instr[6:2] ==? 5'b11_000 ;
+            $is_j_instr = $instr[6:2] ==? 5'b11_011 ;
+            $is_u_instr = $instr[6:2] ==? 5'b0x_101 ;
+            
+            $imm[31:0] = $is_i_instr ? { {21{$instr[31]}}, $instr[30:20] } :
+            $is_s_instr ? { {21{$instr[31]}},
+                             $instr[30:25],
+                             $instr[11:7] } :
+
+            $is_b_instr ? { {20{$instr[31]}},
+                             $instr[7],
+                             $instr[30:25],
+                             $instr[11:8],
+                             1'b0 } :
+
+            $is_u_instr ? { $instr[31:12],
+                             12'd0 } :
+
+            $is_j_instr ? { {12{$instr[31]}},
+                             $instr[19:12],
+                             $instr[20],
+                             $instr[30:21],
+                             1'b0 } : 32'd0;
+
+
+            $funct7_valid = $is_r_instr;
+            ?$funct7_valid
+               $funct7[6:0] = $instr[31:25];
+            
+            $rs2_valid = $is_r_instr || $is_s_instr || $is_b_instr;
+            ?$rs2_valid
+               $rs2[4:0]    = $instr[24:20];
+              
+            $rs1_valid = $is_r_instr || $is_i_instr || $is_s_instr || $is_b_instr;
+            ?$rs2_valid
+               $rs1[4:0]    = $instr[19:15];
+
+            $funct3_valid = $is_r_instr || $is_i_instr || $is_s_instr || $is_b_instr;
+            ?$funct3_valid
+               $funct3[2:0] = $instr[14:12];
+
+            $rd_valid = $is_r_instr || $is_i_instr || $is_u_instr || $is_j_instr;
+            ?$rd_valid
+               $rd[4:0]     = $instr[11:7];
+
+            $opcode_valid = $is_r_instr || $is_i_instr || $is_s_instr || $is_b_instr || $is_u_instr || $is_j_instr;
+            ?$opcode_valid
+               $opcode[6:0] = $instr[6:0];       
+               
+            
+            $dec_bits[10:0] = {$funct7[5], $funct3, $opcode};
+            
+            $is_beq  = $dec_bits ==? 11'bx_000_1100011;
+
+            $is_bne  = $dec_bits ==? 11'bx_001_1100011;
+
+            $is_blt  = $dec_bits ==? 11'bx_100_1100011;
+
+            $is_bge  = $dec_bits ==? 11'bx_101_1100011;
+
+            $is_bltu = $dec_bits ==? 11'bx_110_1100011;
+
+            $is_bgeu = $dec_bits ==? 11'bx_111_1100011;
+            
+            `BOGUS_USE($is_beq $is_bne $is_blt $is_bge $is_bltu $is_bgeu)
+
+```
+## Result:
+<img width="1918" height="820" alt="image" src="https://github.com/user-attachments/assets/b84113fa-6a76-4173-add9-8c8a0e7abe78" />
+
